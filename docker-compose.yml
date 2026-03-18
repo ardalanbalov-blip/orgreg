@@ -1,4 +1,16 @@
 services:
+  # Fake Dynamics CRM (demo/dev) - with built-in UI
+  fake-dynamics:
+    build:
+      context: ./src
+      dockerfile: OrgReg.FakeDynamics/Dockerfile
+    ports:
+      - "5020:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    restart: unless-stopped
+
+  # Organisation API (informationslager)
   organisation-api:
     build:
       context: ./src
@@ -7,16 +19,19 @@ services:
       - "5010:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - Dynamics__BaseUrl=${DYNAMICS_BASE_URL}
-      - Dynamics__TenantId=${DYNAMICS_TENANT_ID}
-      - Dynamics__ClientId=${DYNAMICS_CLIENT_ID}
-      - Dynamics__ClientSecret=${DYNAMICS_CLIENT_SECRET}
-      - Dynamics__Resource=${DYNAMICS_RESOURCE}
+      - Dynamics__BaseUrl=http://fake-dynamics:8080
+      - Dynamics__TenantId=fake
+      - Dynamics__ClientId=fake
+      - Dynamics__ClientSecret=fake
+      - Dynamics__Resource=http://fake-dynamics:8080
       - Cors__Origins__0=http://localhost:3000
+      - Cors__Origins__1=http://localhost:5012
     depends_on:
+      - fake-dynamics
       - db
     restart: unless-stopped
 
+  # Avtal API (informationslager)
   avtal-api:
     build:
       context: ./src
@@ -27,11 +42,42 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__AvtalDb=Server=db;Database=AvtalDb;User Id=sa;Password=${DB_PASSWORD:-YourStrong!Password};TrustServerCertificate=true
       - Cors__Origins__0=http://localhost:3000
+      - Cors__Origins__1=http://localhost:5012
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
+  # Admin (intern webbtjanst)
+  admin:
+    build:
+      context: ./src
+      dockerfile: OrgReg.Admin/Dockerfile
+    ports:
+      - "5012:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiUrls__OrganisationApi=http://organisation-api:8080
+      - ApiUrls__AvtalApi=http://avtal-api:8080
+    depends_on:
+      - organisation-api
+      - avtal-api
+    restart: unless-stopped
+
+  # Publik webbtjanst (React/Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5010
+    depends_on:
+      - organisation-api
+    restart: unless-stopped
+
+  # SQL Server (for Avtal)
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:

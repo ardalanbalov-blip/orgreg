@@ -12,8 +12,9 @@ public class DynamicsHttpClient
 {
     private readonly HttpClient _httpClient;
     private readonly DynamicsClientOptions _options;
-    private readonly IConfidentialClientApplication _msalClient;
+    private readonly IConfidentialClientApplication? _msalClient;
     private readonly ILogger<DynamicsHttpClient> _logger;
+    private readonly bool _isFake;
 
     public DynamicsHttpClient(
         HttpClient httpClient,
@@ -24,19 +25,26 @@ public class DynamicsHttpClient
         _options = options.Value;
         _logger = logger;
 
-        _msalClient = ConfidentialClientApplicationBuilder
-            .Create(_options.ClientId)
-            .WithClientSecret(_options.ClientSecret)
-            .WithAuthority($"https://login.microsoftonline.com/{_options.TenantId}")
-            .Build();
+        _isFake = _options.ClientId == "fake" || string.IsNullOrEmpty(_options.ClientId);
+
+        if (!_isFake)
+        {
+            _msalClient = ConfidentialClientApplicationBuilder
+                .Create(_options.ClientId)
+                .WithClientSecret(_options.ClientSecret)
+                .WithAuthority($"https://login.microsoftonline.com/{_options.TenantId}")
+                .Build();
+        }
 
         _httpClient.BaseAddress = new Uri($"{_options.BaseUrl}/api/data/{_options.ApiVersion}/");
     }
 
     private async Task EnsureAuthenticatedAsync()
     {
+        if (_isFake) return;
+
         var scopes = new[] { $"{_options.Resource}/.default" };
-        var result = await _msalClient.AcquireTokenForClient(scopes).ExecuteAsync();
+        var result = await _msalClient!.AcquireTokenForClient(scopes).ExecuteAsync();
         _httpClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", result.AccessToken);
     }
