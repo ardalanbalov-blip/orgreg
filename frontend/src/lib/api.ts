@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5010";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export interface Organisation {
   id: string;

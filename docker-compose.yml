@@ -1,11 +1,23 @@
 services:
+  # Nginx reverse proxy - entry point
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - organisation-api
+      - admin
+      - fake-dynamics
+    restart: unless-stopped
+
   # Fake Dynamics CRM (demo/dev) - with built-in UI
   fake-dynamics:
     build:
       context: ./src
       dockerfile: OrgReg.FakeDynamics/Dockerfile
-    ports:
-      - "5020:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     restart: unless-stopped
@@ -15,8 +27,6 @@ services:
     build:
       context: ./src
       dockerfile: OrgReg.Organisation.Api/Dockerfile
-    ports:
-      - "5010:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Dynamics__BaseUrl=http://fake-dynamics:8080
@@ -24,8 +34,7 @@ services:
       - Dynamics__ClientId=fake
       - Dynamics__ClientSecret=fake
       - Dynamics__Resource=http://fake-dynamics:8080
-      - Cors__Origins__0=http://localhost:3000
-      - Cors__Origins__1=http://localhost:5012
+      - Cors__Origins__0=*
     depends_on:
       - fake-dynamics
       - db
@@ -36,13 +45,10 @@ services:
     build:
       context: ./src
       dockerfile: OrgReg.Avtal.Api/Dockerfile
-    ports:
-      - "5011:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__AvtalDb=Server=db;Database=AvtalDb;User Id=sa;Password=${DB_PASSWORD:-YourStrong!Password};TrustServerCertificate=true
-      - Cors__Origins__0=http://localhost:3000
-      - Cors__Origins__1=http://localhost:5012
+      - Cors__Origins__0=*
     depends_on:
       db:
         condition: service_healthy
@@ -53,8 +59,6 @@ services:
     build:
       context: ./src
       dockerfile: OrgReg.Admin/Dockerfile
-    ports:
-      - "5012:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ApiUrls__OrganisationApi=http://organisation-api:8080
@@ -69,10 +73,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5010
+      - NEXT_PUBLIC_API_URL=
     depends_on:
       - organisation-api
     restart: unless-stopped
@@ -80,8 +82,6 @@ services:
   # SQL Server (for Avtal)
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    ports:
-      - "1433:1433"
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=${DB_PASSWORD:-YourStrong!Password}
