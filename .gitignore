@@ -24,5 +24,10 @@ Thumbs.db
 publish/
 out/
 
+## Node / Frontend
+node_modules/
+.next/
+next-env.d.ts
+
 ## Docker
 docker-compose.override.yml
