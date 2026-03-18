@@ -47,6 +47,6 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Remove default nginx config that conflicts
 RUN rm -f /etc/nginx/sites-enabled/default.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 8080
+EXPOSE 80 3000 8080
 
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
