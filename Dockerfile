@@ -43,10 +43,15 @@ COPY --from=frontend-build /app/public /app/frontend/public
 # Copy nginx and supervisor config
 COPY nginx.conf /etc/nginx/sites-enabled/default
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Remove default nginx config that conflicts
 RUN rm -f /etc/nginx/sites-enabled/default.conf /etc/nginx/conf.d/default.conf
 
+# Verify nginx config at build time
+RUN nginx -t
+
 EXPOSE 80 3000 8080
 
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/start.sh"]
