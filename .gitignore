@@ -1,0 +1,33 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.vs/
+.vscode/
+
+## Environment
+.env
+*.local
+
+## OS
+.DS_Store
+Thumbs.db
+
+## IDE
+.idea/
+*.swp
+*.swo
+
+## Build
+publish/
+out/
+
+## Node / Frontend
+node_modules/
+.next/
+next-env.d.ts
+
+## Docker
+docker-compose.override.yml
