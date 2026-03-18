@@ -36,7 +36,10 @@ public class DynamicsHttpClient
                 .Build();
         }
 
-        _httpClient.BaseAddress = new Uri($"{_options.BaseUrl}/api/data/{_options.ApiVersion}/");
+        if (!string.IsNullOrEmpty(_options.BaseUrl))
+        {
+            _httpClient.BaseAddress = new Uri($"{_options.BaseUrl}/api/data/{_options.ApiVersion}/");
+        }
     }
 
     private async Task EnsureAuthenticatedAsync()

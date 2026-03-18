@@ -17,4 +17,8 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV Dynamics__ClientId=fake
+ENV Dynamics__BaseUrl=http://localhost:5020
+ENV Dynamics__ApiVersion=v9.2
 ENTRYPOINT ["dotnet", "OrgReg.Organisation.Api.dll"]
