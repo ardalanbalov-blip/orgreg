@@ -1,0 +1,52 @@
+services:
+  organisation-api:
+    build:
+      context: ./src
+      dockerfile: OrgReg.Organisation.Api/Dockerfile
+    ports:
+      - "5010:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Dynamics__BaseUrl=${DYNAMICS_BASE_URL}
+      - Dynamics__TenantId=${DYNAMICS_TENANT_ID}
+      - Dynamics__ClientId=${DYNAMICS_CLIENT_ID}
+      - Dynamics__ClientSecret=${DYNAMICS_CLIENT_SECRET}
+      - Dynamics__Resource=${DYNAMICS_RESOURCE}
+      - Cors__Origins__0=http://localhost:3000
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  avtal-api:
+    build:
+      context: ./src
+      dockerfile: OrgReg.Avtal.Api/Dockerfile
+    ports:
+      - "5011:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__AvtalDb=Server=db;Database=AvtalDb;User Id=sa;Password=${DB_PASSWORD:-YourStrong!Password};TrustServerCertificate=true
+      - Cors__Origins__0=http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD:-YourStrong!Password}
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  sqldata:
