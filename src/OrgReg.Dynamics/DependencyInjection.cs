@@ -18,6 +18,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitRepository, DynamicsUnitRepository>();
         services.AddScoped<IUserRepository, InMemoryUserRepository>();
         services.AddScoped<IGroupRepository, InMemoryGroupRepository>();
+        services.AddScoped<IRoleRepository, InMemoryRoleRepository>();
+        services.AddScoped<IEnvironmentRepository, InMemoryEnvironmentRepository>();
+        services.AddScoped<IReferenceDataRepository, InMemoryReferenceDataRepository>();
 
         return services;
     }

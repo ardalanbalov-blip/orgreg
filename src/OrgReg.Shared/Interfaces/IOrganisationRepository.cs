@@ -40,3 +40,29 @@ public interface IGroupRepository
     Task<Group> UpdateAsync(Group group);
     Task DeleteAsync(Guid id);
 }
+
+public interface IRoleRepository
+{
+    Task<Role?> GetByIdAsync(Guid id);
+    Task<IReadOnlyList<Role>> GetAllAsync();
+    Task<IReadOnlyList<Role>> GetByEnvironmentIdAsync(Guid environmentId);
+    Task<Role> CreateAsync(Role role);
+    Task<Role> UpdateAsync(Role role);
+    Task DeleteAsync(Guid id);
+}
+
+public interface IEnvironmentRepository
+{
+    Task<Models.Organisation.Environment?> GetByIdAsync(Guid id);
+    Task<IReadOnlyList<Models.Organisation.Environment>> GetAllAsync();
+    Task<Models.Organisation.Environment> CreateAsync(Models.Organisation.Environment environment);
+    Task<Models.Organisation.Environment> UpdateAsync(Models.Organisation.Environment environment);
+    Task DeleteAsync(Guid id);
+}
+
+public interface IReferenceDataRepository
+{
+    Task<IReadOnlyList<OrganisationType>> GetOrganisationTypesAsync();
+    Task<IReadOnlyList<UnitType>> GetUnitTypesAsync();
+    Task<IReadOnlyList<EducationType>> GetEducationTypesAsync();
+}

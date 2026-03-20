@@ -16,6 +16,8 @@ builder.Services.AddScoped<UnitService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<MembershipService>();
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<EnvironmentService>();
 
 builder.Services.AddCors(options =>
 {
