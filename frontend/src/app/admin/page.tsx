@@ -7,7 +7,8 @@ import {
   deleteOrganisation, createOrganisation,
   getStatusLabel, getStatusColor, getSourceLabel,
   getEnvironments, createEnvironment, deleteEnvironment,
-  createRole, deleteRole
+  createRole, deleteRole,
+  createUser, updateUser, deleteUser
 } from "@/lib/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -32,6 +33,16 @@ export default function AdminPage() {
   const [showNewRole, setShowNewRole] = useState<string | null>(null);
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleDesc, setNewRoleDesc] = useState("");
+  const [showNewUser, setShowNewUser] = useState(false);
+  const [newUserFirst, setNewUserFirst] = useState("");
+  const [newUserLast, setNewUserLast] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserSpsm, setNewUserSpsm] = useState("");
+  const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [editUserFirst, setEditUserFirst] = useState("");
+  const [editUserLast, setEditUserLast] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserSpsm, setEditUserSpsm] = useState("");
 
   const loadOrgs = async () => {
     try { setOrgs(search ? await searchOrganisations(search, page) : await getOrganisations(page, 50)); } catch {}
@@ -107,6 +118,27 @@ export default function AdminPage() {
     if (!confirm(`Ta bort roll "${name}"?`)) return;
     await deleteRole(id);
     loadEnvironments();
+  };
+  const handleCreateUser = async () => {
+    if (!newUserFirst.trim() || !newUserLast.trim()) return;
+    await createUser({ firstName: newUserFirst, lastName: newUserLast, email: newUserEmail || undefined, spsmAccountId: newUserSpsm || undefined });
+    setNewUserFirst(""); setNewUserLast(""); setNewUserEmail(""); setNewUserSpsm(""); setShowNewUser(false);
+    loadUsers();
+  };
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (!confirm(`Ta bort användare "${name}"?`)) return;
+    await deleteUser(id);
+    loadUsers();
+  };
+  const startEditUser = (u: User) => {
+    setEditingUser(u.id); setEditUserFirst(u.firstName); setEditUserLast(u.lastName);
+    setEditUserEmail(u.email || ""); setEditUserSpsm(u.spsmAccountId || "");
+  };
+  const handleSaveUser = async () => {
+    if (!editingUser) return;
+    await updateUser(editingUser, { firstName: editUserFirst, lastName: editUserLast, email: editUserEmail || undefined, spsmAccountId: editUserSpsm || undefined });
+    setEditingUser(null);
+    loadUsers();
   };
 
   const tabs: { key: AdminTab; label: string; badge?: number }[] = [
@@ -274,7 +306,23 @@ export default function AdminPage() {
         {/* === USERS === */}
         {tab === "users" && (
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Användare</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Användare</h3>
+              <button onClick={() => setShowNewUser(!showNewUser)} className={showNewUser ? "btn-ghost btn-sm" : "btn-cta btn-sm"}>
+                {showNewUser ? "Avbryt" : "Skapa användare"}
+              </button>
+            </div>
+            {showNewUser && (
+              <div className="card p-5 mb-4 bg-stone-50/50 animate-slide-up">
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div><label className="label">Förnamn *</label><input value={newUserFirst} onChange={(e) => setNewUserFirst(e.target.value)} className="input" placeholder="Förnamn" autoFocus /></div>
+                  <div><label className="label">Efternamn *</label><input value={newUserLast} onChange={(e) => setNewUserLast(e.target.value)} className="input" placeholder="Efternamn" /></div>
+                  <div><label className="label">E-post</label><input value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} className="input" placeholder="namn@exempel.se" type="email" /></div>
+                  <div><label className="label">SPSM Konto-ID</label><input value={newUserSpsm} onChange={(e) => setNewUserSpsm(e.target.value)} className="input" placeholder="Valfritt" /></div>
+                </div>
+                <button onClick={handleCreateUser} disabled={!newUserFirst.trim() || !newUserLast.trim()} className="btn-primary">Skapa användare</button>
+              </div>
+            )}
             <div className="card overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
@@ -283,23 +331,51 @@ export default function AdminPage() {
                     <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">E-post</th>
                     <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">SPSM Konto-ID</th>
                     <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Registrerad</th>
+                    <th className="w-20 px-5 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {users?.items.map((u) => (
-                    <tr key={u.id} className="hover:bg-stone-50/50 transition-colors">
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-spsm-burgundy-50 flex items-center justify-center text-spsm-burgundy-800 font-bold text-xs">
-                            {u.firstName[0]}{u.lastName[0]}
+                    editingUser === u.id ? (
+                      <tr key={u.id} className="bg-stone-50/50">
+                        <td className="px-5 py-2">
+                          <div className="flex gap-2"><input value={editUserFirst} onChange={(e) => setEditUserFirst(e.target.value)} className="input py-1 text-sm" /><input value={editUserLast} onChange={(e) => setEditUserLast(e.target.value)} className="input py-1 text-sm" /></div>
+                        </td>
+                        <td className="px-5 py-2"><input value={editUserEmail} onChange={(e) => setEditUserEmail(e.target.value)} className="input py-1 text-sm" /></td>
+                        <td className="px-5 py-2"><input value={editUserSpsm} onChange={(e) => setEditUserSpsm(e.target.value)} className="input py-1 text-sm font-mono" /></td>
+                        <td className="px-5 py-2"></td>
+                        <td className="px-5 py-2 text-right">
+                          <div className="flex gap-1 justify-end">
+                            <button onClick={handleSaveUser} className="btn-primary btn-sm">Spara</button>
+                            <button onClick={() => setEditingUser(null)} className="btn-ghost btn-sm">Avbryt</button>
                           </div>
-                          <span className="font-semibold text-gray-900">{u.firstName} {u.lastName}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3 text-gray-600">{u.email || <span className="text-gray-300">-</span>}</td>
-                      <td className="px-5 py-3 font-mono text-xs text-gray-500">{u.spsmAccountId || <span className="text-gray-300">-</span>}</td>
-                      <td className="px-5 py-3 text-gray-500">{new Date(u.createdAt).toLocaleDateString("sv-SE")}</td>
-                    </tr>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={u.id} className="hover:bg-stone-50/50 transition-colors">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-spsm-burgundy-50 flex items-center justify-center text-spsm-burgundy-800 font-bold text-xs">
+                              {u.firstName[0]}{u.lastName[0]}
+                            </div>
+                            <span className="font-semibold text-gray-900">{u.firstName} {u.lastName}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-gray-600">{u.email || <span className="text-gray-300">-</span>}</td>
+                        <td className="px-5 py-3 font-mono text-xs text-gray-500">{u.spsmAccountId || <span className="text-gray-300">-</span>}</td>
+                        <td className="px-5 py-3 text-gray-500">{new Date(u.createdAt).toLocaleDateString("sv-SE")}</td>
+                        <td className="px-5 py-3 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <button onClick={() => startEditUser(u)} className="text-gray-300 hover:text-spsm-burgundy-800 transition-colors" title="Redigera">
+                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Z"/></svg>
+                            </button>
+                            <button onClick={() => handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`)} className="text-gray-300 hover:text-red-500 transition-colors" title="Ta bort">
+                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5Z"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
                   ))}
                 </tbody>
               </table>
