@@ -90,13 +90,13 @@ export function getSourceLabel(source: number): string { return sourceLabels[sou
 
 export function getStatusColor(status: number): string {
   const colors: Record<number, string> = {
-    0: "bg-yellow-100 text-yellow-800",
-    1: "bg-gray-100 text-gray-800",
-    2: "bg-green-100 text-green-800",
-    3: "bg-orange-100 text-orange-800",
-    4: "bg-red-100 text-red-800",
+    0: "bg-spsm-orange-50 text-spsm-orange-700",
+    1: "bg-gray-100 text-gray-600",
+    2: "bg-spsm-green-50 text-spsm-green-700",
+    3: "bg-amber-50 text-amber-700",
+    4: "bg-spsm-burgundy-50 text-spsm-burgundy-800",
   };
-  return colors[status] ?? "bg-gray-100 text-gray-800";
+  return colors[status] ?? "bg-gray-100 text-gray-600";
 }
 
 // --- Fetch helper ---

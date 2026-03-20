@@ -6,15 +6,16 @@ import { createOrganisation } from "@/lib/api";
 
 const ORG_TYPES = [
   { id: "c1000000-0000-0000-0000-000000000001", name: "Kommun" },
-  { id: "c1000000-0000-0000-0000-000000000002", name: "Fristaende huvudman" },
+  { id: "c1000000-0000-0000-0000-000000000002", name: "Fristående huvudman" },
   { id: "c1000000-0000-0000-0000-000000000003", name: "Statlig" },
-  { id: "c1000000-0000-0000-0000-000000000004", name: "Ovrig" },
+  { id: "c1000000-0000-0000-0000-000000000004", name: "Övrig" },
 ];
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,7 +27,7 @@ export default function RegisterPage() {
       await createOrganisation({
         name: form.get("name") as string,
         orgNumber: (form.get("orgNumber") as string) || undefined,
-        sourceType: 1, // SelfRegistered
+        sourceType: 1,
         organisationTypeId: form.get("orgType") as string,
         addresses: [
           {
@@ -42,85 +43,137 @@ export default function RegisterPage() {
           ...(form.get("phone") ? [{ contactType: "Phone", value: form.get("phone") as string }] : []),
         ],
       });
-      router.push("/");
+      setSuccess(true);
+      setTimeout(() => router.push("/"), 1500);
     } catch {
-      setError("Kunde inte registrera organisationen. Forsok igen.");
+      setError("Kunde inte registrera organisationen. Försök igen.");
     } finally {
       setLoading(false);
     }
   };
 
+  if (success) {
+    return (
+      <div className="max-w-lg mx-auto mt-12 animate-slide-up">
+        <div className="card p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-spsm-green-50 flex items-center justify-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-spsm-green-500"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">Organisation registrerad</h3>
+          <p className="text-sm text-gray-500 mt-2">Din organisation har registrerats och väntar på granskning av SPSM.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Registrera ny organisation</h2>
+    <div className="max-w-2xl mx-auto animate-slide-up">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+        <a href="/" className="hover:text-spsm-burgundy-800 transition-colors">Organisationer</a>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className="text-gray-300"><path d="M4.5 2l4 4-4 4"/></svg>
+        <span className="text-gray-700 font-medium">Registrera</span>
+      </div>
+
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Registrera ny organisation</h2>
+        <p className="text-sm text-gray-500 mt-1">Fyll i uppgifterna nedan. Obligatoriska fält är markerade med *</p>
+      </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 text-sm">{error}</div>
+        <div className="bg-spsm-burgundy-50 border border-spsm-burgundy-200 text-spsm-burgundy-800 p-4 rounded-xl mb-6 text-sm font-medium flex items-center gap-3">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="shrink-0"><path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+          {error}
+        </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-6 space-y-6">
-        <div className="space-y-4">
-          <h3 className="font-semibold text-gray-900 border-b pb-2">Grunduppgifter</h3>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Organisationsnamn *</label>
-            <input name="name" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Section 1 */}
+        <div className="card p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-full bg-spsm-burgundy-800 text-white flex items-center justify-center text-sm font-bold">1</div>
+            <h3 className="font-bold text-gray-900">Grunduppgifter</h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Organisationsnummer</label>
-              <input name="orgNumber" placeholder="XXXXXX-XXXX" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label className="label">Organisationsnamn *</label>
+              <input name="name" required className="input" placeholder="t.ex. Stockholms kommun" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Organisationstyp *</label>
-              <select name="orgType" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Valj typ...</option>
-                {ORG_TYPES.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
 
-        <div className="space-y-4">
-          <h3 className="font-semibold text-gray-900 border-b pb-2">Adress</h3>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gatuadress</label>
-            <input name="street" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Postnummer</label>
-              <input name="postalCode" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ort</label>
-              <input name="city" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">Organisationsnummer</label>
+                <input name="orgNumber" placeholder="XXXXXX-XXXX" className="input" />
+              </div>
+              <div>
+                <label className="label">Organisationstyp *</label>
+                <select name="orgType" required className="input">
+                  <option value="">Välj typ...</option>
+                  {ORG_TYPES.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="font-semibold text-gray-900 border-b pb-2">Kontaktuppgifter</h3>
-          <div className="grid grid-cols-2 gap-4">
+        {/* Section 2 */}
+        <div className="card p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-full bg-spsm-orange-500 text-white flex items-center justify-center text-sm font-bold">2</div>
+            <h3 className="font-bold text-gray-900">Adress</h3>
+          </div>
+
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-post</label>
-              <input name="email" type="email" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label className="label">Gatuadress</label>
+              <input name="street" className="input" placeholder="t.ex. Storgatan 1" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-              <input name="phone" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">Postnummer</label>
+                <input name="postalCode" className="input" placeholder="t.ex. 11122" />
+              </div>
+              <div>
+                <label className="label">Ort</label>
+                <input name="city" className="input" placeholder="t.ex. Stockholm" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4 border-t">
-          <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50">
-            {loading ? "Registrerar..." : "Registrera organisation"}
+        {/* Section 3 */}
+        <div className="card p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-full bg-spsm-green-400 text-white flex items-center justify-center text-sm font-bold">3</div>
+            <h3 className="font-bold text-gray-900">Kontaktuppgifter</h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">E-post</label>
+              <input name="email" type="email" className="input" placeholder="info@exempel.se" />
+            </div>
+            <div>
+              <label className="label">Telefon</label>
+              <input name="phone" className="input" placeholder="08-123 456 78" />
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          <button type="submit" disabled={loading} className="btn-primary">
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Registrerar...
+              </>
+            ) : "Registrera organisation"}
           </button>
-          <a href="/" className="px-6 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Avbryt</a>
+          <a href="/" className="btn-secondary">Avbryt</a>
         </div>
       </form>
     </div>
