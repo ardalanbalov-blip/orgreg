@@ -210,21 +210,23 @@ export default function OrganisationDetail() {
   };
 
   if (error) return (
-    <div className="max-w-lg mx-auto mt-12">
-      <div className="card p-8 text-center">
-        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-spsm-burgundy-50 flex items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-spsm-burgundy-800"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+    <div className="max-w-lg mx-auto mt-16 animate-scale-in">
+      <div className="card p-12 text-center">
+        <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-red-50 flex items-center justify-center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><circle cx="12" cy="16" r="0.5" fill="#dc2626"/></svg>
         </div>
-        <p className="text-gray-600 font-medium">{error}</p>
-        <a href="/" className="btn-secondary btn-sm mt-4 inline-flex">Tillbaka</a>
+        <p className="text-gray-700 font-semibold text-lg">{error}</p>
+        <a href="/" className="btn-secondary mt-5 inline-flex">Tillbaka till listan</a>
       </div>
     </div>
   );
 
   if (!org) return (
-    <div className="card max-w-lg mx-auto mt-12 p-12 text-center">
-      <div className="inline-block w-8 h-8 border-3 border-gray-200 border-t-spsm-burgundy-800 rounded-full animate-spin" style={{borderWidth: 3}} />
-      <p className="text-sm text-gray-500 mt-3">Laddar organisation...</p>
+    <div className="card max-w-lg mx-auto mt-16 p-16 text-center animate-fade-in">
+      <div className="relative inline-block">
+        <div className="w-12 h-12 rounded-full border-[3px] border-gray-200 border-t-spsm-burgundy-800 animate-spin" />
+      </div>
+      <p className="text-sm text-gray-400 mt-5 font-medium">Laddar organisation...</p>
     </div>
   );
 
@@ -237,65 +239,65 @@ export default function OrganisationDetail() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto animate-slide-up">
+    <div className="max-w-5xl mx-auto animate-slide-up">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+      <div className="flex items-center gap-2 text-xs text-gray-400 mb-8 font-medium">
         <a href="/" className="hover:text-spsm-burgundy-800 transition-colors">Organisationer</a>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className="text-gray-300"><path d="M4.5 2l4 4-4 4"/></svg>
-        <span className="text-gray-700 font-medium">{org.name}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+        <span className="text-gray-700">{org.name}</span>
       </div>
 
       {/* Header card */}
-      <div className="card p-6 mb-6">
+      <div className="card p-7 mb-8 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-spsm-burgundy-800 via-spsm-orange-500 to-spsm-green-400" />
         <div className="flex items-start justify-between">
           <div className="flex-1">
             {editing ? (
-              <div className="flex gap-2 items-center mb-1">
-                <input value={editName} onChange={(e) => setEditName(e.target.value)} className="input text-xl font-bold py-1 max-w-md" autoFocus />
+              <div className="flex gap-3 items-center mb-2">
+                <input value={editName} onChange={(e) => setEditName(e.target.value)} className="input text-xl font-bold py-2 max-w-md" autoFocus />
                 <button onClick={handleSave} className="btn-primary btn-sm">Spara</button>
                 <button onClick={() => setEditing(false)} className="btn-ghost btn-sm">Avbryt</button>
               </div>
             ) : (
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-2xl font-bold text-gray-900">{org.name}</h2>
-                <button onClick={() => { setEditing(true); setEditName(org.name); }} className="text-gray-300 hover:text-spsm-burgundy-800 transition-colors" title="Redigera namn">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L3.46 11.1a.25.25 0 0 0-.057.1l-.555 1.943 1.943-.555a.25.25 0 0 0 .1-.057l8.614-8.613a.25.25 0 0 0 0-.354l-1.078-1.078Z"/></svg>
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{org.name}</h2>
+                <button onClick={() => { setEditing(true); setEditName(org.name); }} className="p-1.5 rounded-lg text-gray-300 hover:text-spsm-burgundy-800 hover:bg-spsm-burgundy-50 transition-all" title="Redigera namn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                 </button>
               </div>
             )}
-            <p className="text-gray-500 font-mono text-sm">{org.orgNumber || "Inget organisationsnummer"}</p>
+            <span className="font-mono text-xs text-gray-500 bg-gray-100/80 rounded-lg px-2.5 py-1">{org.orgNumber || "Inget org.nr"}</span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <span className={`badge text-sm px-3 py-1 ${getStatusColor(org.status)}`}>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className={`badge px-3.5 py-1.5 ${getStatusColor(org.status)}`}>
+              <span className={`badge-dot ${org.status === 2 ? 'bg-spsm-green-500' : org.status === 0 ? 'bg-spsm-orange-500' : org.status === 4 ? 'bg-red-400' : 'bg-gray-400'}`} />
               {getStatusLabel(org.status)}
             </span>
             {org.status !== 2 && (
               <button onClick={handleActivate} className="btn-success btn-sm">Aktivera</button>
             )}
-            <button onClick={handleDelete} className="btn-ghost btn-sm text-gray-400 hover:text-red-600" title="Ta bort">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5Z"/></svg>
+            <button onClick={handleDelete} className="p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all" title="Ta bort">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-0 -mb-px">
+      <div className="bg-white rounded-2xl border border-gray-200/60 shadow-glass mb-8 px-2">
+        <nav className="flex gap-0.5">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-5 py-3.5 text-sm font-semibold border-b-[3px] transition-colors ${
-                tab === t.key
-                  ? "border-spsm-burgundy-800 text-spsm-burgundy-800"
-                  : "border-transparent text-gray-400 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`tab-item ${tab === t.key ? "tab-item-active" : "tab-item-inactive"}`}
             >
               {t.label}
               {t.count !== undefined && t.count > 0 && (
-                <span className="ml-2 text-[10px] bg-gray-100 text-gray-500 rounded-full px-1.5 py-0.5">{t.count}</span>
+                <span className={`ml-2 text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] inline-block text-center ${
+                  tab === t.key ? "bg-spsm-burgundy-100 text-spsm-burgundy-800" : "bg-gray-100 text-gray-500"
+                }`}>{t.count}</span>
               )}
             </button>
           ))}
@@ -306,41 +308,48 @@ export default function OrganisationDetail() {
       <div className="animate-fade-in">
         {/* === INFO === */}
         {tab === "info" && (
-          <div className="grid grid-cols-2 gap-6">
-            <div className="card p-5">
+          <div className="grid grid-cols-2 gap-6 animate-fade-in">
+            <div className="card p-6">
               <p className="section-title">Grunduppgifter</p>
-              <dl className="space-y-3 text-sm">
-                <div className="flex justify-between"><dt className="text-gray-400">Typ</dt><dd className="font-medium text-gray-900">{org.organisationType?.name || "-"}</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-400">Källa</dt><dd className="font-medium text-gray-900">{getSourceLabel(org.sourceType)}</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-400">Skapad</dt><dd className="text-gray-600">{new Date(org.createdAt).toLocaleDateString("sv-SE")}</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-400">Uppdaterad</dt><dd className="text-gray-600">{new Date(org.updatedAt).toLocaleDateString("sv-SE")}</dd></div>
+              <dl className="space-y-4 text-sm">
+                {[
+                  { label: "Typ", value: org.organisationType?.name || "-" },
+                  { label: "Källa", value: getSourceLabel(org.sourceType) },
+                  { label: "Skapad", value: new Date(org.createdAt).toLocaleDateString("sv-SE") },
+                  { label: "Uppdaterad", value: new Date(org.updatedAt).toLocaleDateString("sv-SE") },
+                ].map(item => (
+                  <div key={item.label} className="flex justify-between items-center py-1 border-b border-gray-100/80 last:border-0">
+                    <dt className="text-gray-400 text-xs font-semibold uppercase tracking-wider">{item.label}</dt>
+                    <dd className="font-semibold text-gray-900">{item.value}</dd>
+                  </div>
+                ))}
               </dl>
             </div>
 
-            <div className="card p-5">
+            <div className="card p-6">
               <p className="section-title">Adresser</p>
               {org.addresses.length > 0 ? org.addresses.map((a) => (
-                <div key={a.id} className="text-sm mb-3 last:mb-0">
-                  <span className="badge bg-stone-100 text-stone-600 mb-1">{a.addressType}</span>
-                  <p className="text-gray-900 font-medium">{a.street}</p>
-                  <p className="text-gray-600">{a.postalCode} {a.city}</p>
-                  {a.country && <p className="text-gray-400">{a.country}</p>}
+                <div key={a.id} className="text-sm mb-4 last:mb-0 p-3 rounded-xl bg-gray-50/80">
+                  <span className="badge bg-spsm-burgundy-50 text-spsm-burgundy-700 mb-2">{a.addressType}</span>
+                  <p className="text-gray-900 font-semibold">{a.street}</p>
+                  <p className="text-gray-500">{a.postalCode} {a.city}</p>
+                  {a.country && <p className="text-gray-400 text-xs mt-0.5">{a.country}</p>}
                 </div>
-              )) : <p className="text-sm text-gray-300">Inga adresser</p>}
+              )) : <p className="text-sm text-gray-300 italic">Inga adresser registrerade</p>}
             </div>
 
-            <div className="card p-5 col-span-2">
+            <div className="card p-6 col-span-2">
               <p className="section-title">Kontaktuppgifter</p>
               {org.contacts.length > 0 ? (
-                <div className="flex gap-8">
+                <div className="flex gap-6">
                   {org.contacts.map((c) => (
-                    <div key={c.id} className="text-sm">
-                      <span className="badge bg-stone-100 text-stone-600 mb-1">{c.contactType}</span>
-                      <p className="text-gray-900 font-medium">{c.value}</p>
+                    <div key={c.id} className="p-3 rounded-xl bg-gray-50/80 flex-1">
+                      <span className="badge bg-spsm-orange-50 text-spsm-orange-700 mb-2">{c.contactType}</span>
+                      <p className="text-gray-900 font-semibold">{c.value}</p>
                     </div>
                   ))}
                 </div>
-              ) : <p className="text-sm text-gray-300">Inga kontaktuppgifter</p>}
+              ) : <p className="text-sm text-gray-300 italic">Inga kontaktuppgifter registrerade</p>}
             </div>
           </div>
         )}

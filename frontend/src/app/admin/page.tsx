@@ -151,39 +151,32 @@ export default function AdminPage() {
   ];
 
   const statCards = [
-    { label: "Totalt", value: orgs?.totalCount ?? "-", color: "text-gray-900", bg: "bg-white" },
-    { label: "Aktiva", value: orgs?.items.filter(o => o.status === 2).length ?? "-", color: "text-spsm-green-600", bg: "bg-spsm-green-50/50" },
-    { label: "Väntar granskning", value: orgs?.items.filter(o => o.status === 0 && o.sourceType === 1).length ?? "-", color: "text-spsm-orange-500", bg: "bg-spsm-orange-50/50" },
-    { label: "Självregistrerade", value: orgs?.items.filter(o => o.sourceType === 1).length ?? "-", color: "text-spsm-burgundy-800", bg: "bg-spsm-burgundy-50/50" },
+    { label: "Totalt", value: orgs?.totalCount ?? "-", gradient: "from-gray-800 to-gray-900" },
+    { label: "Aktiva", value: orgs?.items.filter(o => o.status === 2).length ?? "-", gradient: "from-spsm-green-500 to-spsm-green-700" },
+    { label: "Väntar granskning", value: orgs?.items.filter(o => o.status === 0 && o.sourceType === 1).length ?? "-", gradient: "from-spsm-orange-400 to-spsm-orange-600" },
+    { label: "Självregistrerade", value: orgs?.items.filter(o => o.sourceType === 1).length ?? "-", gradient: "from-spsm-burgundy-700 to-spsm-burgundy-900" },
   ];
 
   return (
-    <div className="animate-slide-up">
+    <div className="max-w-6xl mx-auto animate-slide-up">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-lg bg-gray-900 flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="white"><path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm4.75 6.75a.75.75 0 0 0-1.5 0v2.546l-.943-1.048a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.114 0l2.25-2.5a.75.75 0 1 0-1.114-1.004l-.943 1.048V8.75Z"/></svg>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Administration</h2>
-            <p className="text-sm text-gray-500">Intern hantering av organisationer och användare</p>
-          </div>
+      <div className="mb-10">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="h-8 w-1 rounded-full bg-gradient-to-b from-gray-900 to-gray-500" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Intern</p>
         </div>
+        <h2 className="page-title">Administration</h2>
+        <p className="page-subtitle">Intern hantering av organisationer, användare och systemdata</p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-0 -mb-px">
+      <div className="bg-white rounded-2xl border border-gray-200/60 shadow-glass mb-8 px-2">
+        <nav className="flex gap-0.5">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => { setTab(t.key); setPage(1); }}
-              className={`px-5 py-3.5 text-sm font-semibold border-b-[3px] transition-colors ${
-                tab === t.key
-                  ? "border-spsm-burgundy-800 text-spsm-burgundy-800"
-                  : "border-transparent text-gray-400 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`tab-item ${tab === t.key ? "tab-item-active" : "tab-item-inactive"}`}
             >
               {t.label}
               {t.badge !== undefined && t.badge > 0 && (
@@ -197,11 +190,11 @@ export default function AdminPage() {
       <div className="animate-fade-in">
         {/* === OVERVIEW === */}
         {tab === "overview" && (
-          <div className="grid grid-cols-4 gap-4">
-            {statCards.map((s) => (
-              <div key={s.label} className={`card p-5 ${s.bg}`}>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{s.label}</p>
-                <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+          <div className="grid grid-cols-4 gap-5 animate-fade-in">
+            {statCards.map((s, i) => (
+              <div key={s.label} className={`stat-card bg-gradient-to-br ${s.gradient} animate-slide-up stagger-${i + 1}`}>
+                <p className="stat-value">{s.value}</p>
+                <p className="stat-label">{s.label}</p>
               </div>
             ))}
           </div>

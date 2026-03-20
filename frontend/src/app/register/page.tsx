@@ -42,7 +42,7 @@ export default function RegisterPage() {
         ],
       });
       setSuccess(true);
-      setTimeout(() => router.push("/"), 1500);
+      setTimeout(() => router.push("/"), 2000);
     } catch {
       setError("Kunde inte registrera organisationen. Försök igen.");
     } finally {
@@ -52,53 +52,84 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto mt-12 animate-slide-up">
-        <div className="card p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-spsm-green-50 flex items-center justify-center">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-spsm-green-500"><path d="M20 6L9 17l-5-5"/></svg>
+      <div className="max-w-lg mx-auto mt-16 animate-scale-in">
+        <div className="card p-12 text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #81a832 0%, #638524 100%)' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+            <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/10" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">Organisation registrerad</h3>
-          <p className="text-sm text-gray-500 mt-2">Din organisation har registrerats och väntar på granskning av SPSM.</p>
+          <h3 className="text-xl font-bold text-gray-900">Organisation registrerad!</h3>
+          <p className="text-sm text-gray-500 mt-3 max-w-xs mx-auto">Din organisation har registrerats och väntar på granskning av SPSM.</p>
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-spsm-burgundy-800 rounded-full animate-spin" />
+            Omdirigerar...
+          </div>
         </div>
       </div>
     );
   }
 
+  const steps = [
+    { num: 1, label: "Grunduppgifter", color: "from-spsm-burgundy-800 to-spsm-burgundy-600" },
+    { num: 2, label: "Adress", color: "from-spsm-orange-500 to-spsm-orange-600" },
+    { num: 3, label: "Kontakt", color: "from-spsm-green-500 to-spsm-green-600" },
+  ];
+
   return (
     <div className="max-w-2xl mx-auto animate-slide-up">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+      <div className="flex items-center gap-2 text-xs text-gray-400 mb-8 font-medium">
         <a href="/" className="hover:text-spsm-burgundy-800 transition-colors">Organisationer</a>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className="text-gray-300"><path d="M4.5 2l4 4-4 4"/></svg>
-        <span className="text-gray-700 font-medium">Registrera</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+        <span className="text-gray-700">Registrera</span>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Registrera ny organisation</h2>
-        <p className="text-sm text-gray-500 mt-1">Fyll i uppgifterna nedan. Obligatoriska fält är markerade med *</p>
+      <div className="mb-8">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="h-8 w-1 rounded-full bg-gradient-to-b from-spsm-burgundy-800 to-spsm-burgundy-400" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-spsm-burgundy-800/60">Nyregistrering</p>
+        </div>
+        <h2 className="page-title">Registrera organisation</h2>
+        <p className="page-subtitle">Fyll i uppgifterna nedan. Obligatoriska fält är markerade med *</p>
+      </div>
+
+      {/* Progress indicators */}
+      <div className="flex items-center gap-4 mb-8">
+        {steps.map((s, i) => (
+          <div key={s.num} className="flex items-center gap-3 flex-1">
+            <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${s.color} text-white flex items-center justify-center text-xs font-bold shadow-sm`}>
+              {s.num}
+            </div>
+            <span className="text-xs font-semibold text-gray-500">{s.label}</span>
+            {i < 2 && <div className="flex-1 h-px bg-gray-200 ml-2" />}
+          </div>
+        ))}
       </div>
 
       {error && (
-        <div className="bg-spsm-burgundy-50 border border-spsm-burgundy-200 text-spsm-burgundy-800 p-4 rounded-xl mb-6 text-sm font-medium flex items-center gap-3">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="shrink-0"><path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
-          {error}
+        <div className="card p-4 mb-6 border-red-200/60 bg-red-50/50 animate-scale-in">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/></svg>
+            </div>
+            <p className="text-sm font-medium text-red-800">{error}</p>
+          </div>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section 1 */}
-        <div className="card p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-full bg-spsm-burgundy-800 text-white flex items-center justify-center text-sm font-bold">1</div>
+        <div className="card p-7">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-spsm-burgundy-800 to-spsm-burgundy-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">1</div>
             <h3 className="font-bold text-gray-900">Grunduppgifter</h3>
           </div>
-
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
               <label className="label">Organisationsnamn *</label>
-              <input name="name" required className="input" placeholder="t.ex. Stockholms kommun" />
+              <input name="name" required className="input-lg" placeholder="t.ex. Stockholms kommun" />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Organisationsnummer</label>
@@ -118,12 +149,11 @@ export default function RegisterPage() {
         </div>
 
         {/* Section 2 */}
-        <div className="card p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-full bg-spsm-orange-500 text-white flex items-center justify-center text-sm font-bold">2</div>
+        <div className="card p-7">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-spsm-orange-500 to-spsm-orange-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">2</div>
             <h3 className="font-bold text-gray-900">Adress</h3>
           </div>
-
           <div className="space-y-4">
             <div>
               <label className="label">Gatuadress</label>
@@ -132,7 +162,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Postnummer</label>
-                <input name="postalCode" className="input" placeholder="t.ex. 11122" />
+                <input name="postalCode" className="input" placeholder="t.ex. 111 22" />
               </div>
               <div>
                 <label className="label">Ort</label>
@@ -143,12 +173,11 @@ export default function RegisterPage() {
         </div>
 
         {/* Section 3 */}
-        <div className="card p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-full bg-spsm-green-400 text-white flex items-center justify-center text-sm font-bold">3</div>
+        <div className="card p-7">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-spsm-green-500 to-spsm-green-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">3</div>
             <h3 className="font-bold text-gray-900">Kontaktuppgifter</h3>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">E-post</label>
@@ -162,8 +191,8 @@ export default function RegisterPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
-          <button type="submit" disabled={loading} className="btn-primary">
+        <div className="flex items-center gap-3 pt-2">
+          <button type="submit" disabled={loading} className="btn-primary px-8 py-3 text-base rounded-2xl">
             {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -171,7 +200,7 @@ export default function RegisterPage() {
               </>
             ) : "Registrera organisation"}
           </button>
-          <a href="/" className="btn-secondary">Avbryt</a>
+          <a href="/" className="btn-ghost px-6">Avbryt</a>
         </div>
       </form>
     </div>
