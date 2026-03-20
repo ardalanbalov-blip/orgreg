@@ -17,8 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <h1 className="text-xl font-semibold text-gray-900">SPSM Organisationsregister</h1>
             </div>
             <nav className="flex gap-6 text-sm">
-              <a href="/" className="text-gray-700 hover:text-blue-600">Organisationer</a>
+              <a href="/" className="text-gray-700 hover:text-blue-600">Mina organisationer</a>
               <a href="/register" className="text-gray-700 hover:text-blue-600">Registrera</a>
+              <a href="/admin" className="text-gray-500 hover:text-blue-600 border-l pl-6 ml-2 border-gray-300">Admin</a>
             </nav>
           </div>
         </header>
