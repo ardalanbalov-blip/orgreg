@@ -154,6 +154,10 @@ export async function createUnit(data: { name: string; sourceType: number; unitT
   return apiFetch("/api/v1/units", { method: "POST", body: JSON.stringify(data) });
 }
 
+export async function updateUnit(id: string, data: { name?: string; status?: number; unitTypeId?: string; educationTypeIds?: string[] }): Promise<Unit> {
+  return apiFetch(`/api/v1/units/${id}`, { method: "PUT", body: JSON.stringify(data) });
+}
+
 export async function deleteUnit(id: string): Promise<void> {
   await fetch(`${API_BASE}/api/v1/units/${id}`, { method: "DELETE" });
 }
@@ -168,6 +172,10 @@ export async function createGroup(data: { name: string; description?: string; or
   return apiFetch("/api/v1/groups", { method: "POST", body: JSON.stringify(data) });
 }
 
+export async function updateGroup(id: string, data: { name?: string; description?: string }): Promise<Group> {
+  return apiFetch(`/api/v1/groups/${id}`, { method: "PUT", body: JSON.stringify(data) });
+}
+
 export async function deleteGroup(id: string): Promise<void> {
   await fetch(`${API_BASE}/api/v1/groups/${id}`, { method: "DELETE" });
 }
@@ -180,6 +188,14 @@ export async function getUsers(page = 1, pageSize = 50): Promise<PagedResult<Use
 
 export async function createUser(data: { firstName: string; lastName: string; email?: string; spsmAccountId?: string }): Promise<User> {
   return apiFetch("/api/v1/users", { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function updateUser(id: string, data: { firstName?: string; lastName?: string; email?: string; spsmAccountId?: string }): Promise<User> {
+  return apiFetch(`/api/v1/users/${id}`, { method: "PUT", body: JSON.stringify(data) });
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await fetch(`${API_BASE}/api/v1/users/${id}`, { method: "DELETE" });
 }
 
 // --- Memberships API ---
