@@ -16,6 +16,8 @@ public static class DependencyInjection
 
         services.AddScoped<IOrganisationRepository, DynamicsOrganisationRepository>();
         services.AddScoped<IUnitRepository, DynamicsUnitRepository>();
+        services.AddScoped<IUserRepository, InMemoryUserRepository>();
+        services.AddScoped<IGroupRepository, InMemoryGroupRepository>();
 
         return services;
     }

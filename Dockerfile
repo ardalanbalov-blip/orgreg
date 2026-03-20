@@ -6,6 +6,9 @@ COPY src/ .
 # Build Organisation API
 RUN dotnet publish OrgReg.Organisation.Api/OrgReg.Organisation.Api.csproj -c Release -o /app/organisation-api /p:UseAppHost=false
 
+# Build Avtal API
+RUN dotnet publish OrgReg.Avtal.Api/OrgReg.Avtal.Api.csproj -c Release -o /app/avtal-api /p:UseAppHost=false
+
 # Build Fake Dynamics
 RUN dotnet publish OrgReg.FakeDynamics/OrgReg.FakeDynamics.csproj -c Release -o /app/fake-dynamics /p:UseAppHost=false
 
@@ -33,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy .NET apps
 COPY --from=dotnet-build /app/organisation-api /app/organisation-api
+COPY --from=dotnet-build /app/avtal-api /app/avtal-api
 COPY --from=dotnet-build /app/fake-dynamics /app/fake-dynamics
 
 # Copy Next.js standalone app

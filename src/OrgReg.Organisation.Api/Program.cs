@@ -13,6 +13,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDynamicsIntegration(builder.Configuration);
 builder.Services.AddScoped<OrganisationService>();
 builder.Services.AddScoped<UnitService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<GroupService>();
+builder.Services.AddScoped<MembershipService>();
 
 builder.Services.AddCors(options =>
 {
