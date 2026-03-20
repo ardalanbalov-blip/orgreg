@@ -188,8 +188,111 @@ export async function getMembershipsByOrganisation(organisationId: string): Prom
   return apiFetch(`/api/v1/memberships/by-organisation/${organisationId}`);
 }
 
+export async function getMembershipsByUnit(unitId: string): Promise<Membership[]> {
+  return apiFetch(`/api/v1/memberships/by-unit/${unitId}`);
+}
+
+export async function getMembershipsByGroup(groupId: string): Promise<Membership[]> {
+  return apiFetch(`/api/v1/memberships/by-group/${groupId}`);
+}
+
 export async function addMember(organisationId: string, data: { userId: string; roleId?: string }): Promise<Membership> {
   return apiFetch(`/api/v1/memberships/organisation/${organisationId}`, { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function addUnitMember(unitId: string, data: { userId: string; roleId?: string }): Promise<Membership> {
+  return apiFetch(`/api/v1/memberships/unit/${unitId}`, { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function addGroupMember(groupId: string, data: { userId: string }): Promise<Membership> {
+  return apiFetch(`/api/v1/memberships/group/${groupId}`, { method: "POST", body: JSON.stringify(data) });
+}
+
+// --- Roles API ---
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+  environmentId: string;
+}
+
+export async function getRoles(): Promise<Role[]> {
+  return apiFetch("/api/v1/roles");
+}
+
+export async function getRolesByEnvironment(environmentId: string): Promise<Role[]> {
+  return apiFetch(`/api/v1/roles/by-environment/${environmentId}`);
+}
+
+export async function createRole(data: { name: string; description?: string; environmentId: string }): Promise<Role> {
+  return apiFetch("/api/v1/roles", { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function updateRole(id: string, data: { name?: string; description?: string }): Promise<Role> {
+  return apiFetch(`/api/v1/roles/${id}`, { method: "PUT", body: JSON.stringify(data) });
+}
+
+export async function deleteRole(id: string): Promise<void> {
+  await fetch(`${API_BASE}/api/v1/roles/${id}`, { method: "DELETE" });
+}
+
+// --- Environments API ---
+
+export interface Environment {
+  id: string;
+  name: string;
+  description: string | null;
+  roles: Role[];
+}
+
+export async function getEnvironments(): Promise<Environment[]> {
+  return apiFetch("/api/v1/environments");
+}
+
+export async function createEnvironment(data: { name: string; description?: string }): Promise<Environment> {
+  return apiFetch("/api/v1/environments", { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function updateEnvironment(id: string, data: { name?: string; description?: string }): Promise<Environment> {
+  return apiFetch(`/api/v1/environments/${id}`, { method: "PUT", body: JSON.stringify(data) });
+}
+
+export async function deleteEnvironment(id: string): Promise<void> {
+  await fetch(`${API_BASE}/api/v1/environments/${id}`, { method: "DELETE" });
+}
+
+// --- Reference Data API ---
+
+export interface OrganisationType {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface UnitType {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface EducationType {
+  id: string;
+  name: string;
+  code: string | null;
+  description: string | null;
+}
+
+export async function getOrganisationTypes(): Promise<OrganisationType[]> {
+  return apiFetch("/api/v1/reference-data/organisation-types");
+}
+
+export async function getUnitTypes(): Promise<UnitType[]> {
+  return apiFetch("/api/v1/reference-data/unit-types");
+}
+
+export async function getEducationTypes(): Promise<EducationType[]> {
+  return apiFetch("/api/v1/reference-data/education-types");
 }
 
 // --- Agreements API ---

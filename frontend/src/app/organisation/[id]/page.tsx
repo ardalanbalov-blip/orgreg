@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Organisation, Unit, Group, Agreement, Membership,
+  Organisation, Unit, Group, Agreement, Membership, UnitType, Role,
   getOrganisation, updateOrganisation, deleteOrganisation,
   getUnitsByOrganisation, getGroupsByOrganisation,
   getAgreementsByOrganisation, getMembershipsByOrganisation,
+  getMembershipsByUnit, getMembershipsByGroup,
   createUnit, createGroup, deleteUnit, deleteGroup,
-  getStatusLabel, getStatusColor, getSourceLabel
+  getStatusLabel, getStatusColor, getSourceLabel,
+  getUnitTypes, getRoles
 } from "@/lib/api";
 
 type Tab = "info" | "units" | "groups" | "members" | "agreements";
@@ -30,11 +32,20 @@ export default function OrganisationDetail() {
   const [showNewGroup, setShowNewGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDesc, setNewGroupDesc] = useState("");
+  const [unitTypes, setUnitTypes] = useState<UnitType[]>([]);
+  const [newUnitTypeId, setNewUnitTypeId] = useState("");
+  const [allRoles, setAllRoles] = useState<Role[]>([]);
+  const [unitMemberships, setUnitMemberships] = useState<Record<string, Membership[]>>({});
+  const [groupMemberships, setGroupMemberships] = useState<Record<string, Membership[]>>({});
+  const [expandedUnit, setExpandedUnit] = useState<string | null>(null);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   const id = params.id as string;
 
   useEffect(() => {
     getOrganisation(id).then(setOrg).catch(() => setError("Kunde inte ladda organisationen"));
+    getUnitTypes().then(setUnitTypes).catch(() => {});
+    getRoles().then(setAllRoles).catch(() => {});
   }, [id]);
 
   useEffect(() => {
@@ -66,9 +77,28 @@ export default function OrganisationDetail() {
 
   const handleCreateUnit = async () => {
     if (!newUnitName.trim()) return;
-    await createUnit({ name: newUnitName, sourceType: 2, unitTypeId: "c1000000-0000-0000-0000-000000000001", organisationId: id });
-    setNewUnitName(""); setShowNewUnit(false);
+    const typeId = newUnitTypeId || unitTypes[0]?.id || "c1000000-0000-0000-0000-000000000001";
+    await createUnit({ name: newUnitName, sourceType: 2, unitTypeId: typeId, organisationId: id });
+    setNewUnitName(""); setNewUnitTypeId(""); setShowNewUnit(false);
     getUnitsByOrganisation(id).then(setUnits);
+  };
+
+  const toggleUnitMembers = async (unitId: string) => {
+    if (expandedUnit === unitId) { setExpandedUnit(null); return; }
+    setExpandedUnit(unitId);
+    if (!unitMemberships[unitId]) {
+      const members = await getMembershipsByUnit(unitId);
+      setUnitMemberships(prev => ({ ...prev, [unitId]: members }));
+    }
+  };
+
+  const toggleGroupMembers = async (groupId: string) => {
+    if (expandedGroup === groupId) { setExpandedGroup(null); return; }
+    setExpandedGroup(groupId);
+    if (!groupMemberships[groupId]) {
+      const members = await getMembershipsByGroup(groupId);
+      setGroupMemberships(prev => ({ ...prev, [groupId]: members }));
+    }
   };
 
   const handleDeleteUnit = async (unitId: string, name: string) => {
@@ -242,6 +272,13 @@ export default function OrganisationDetail() {
                     <label className="label">Enhetsnamn</label>
                     <input value={newUnitName} onChange={(e) => setNewUnitName(e.target.value)} className="input" placeholder="t.ex. Södra Latins gymnasium" autoFocus />
                   </div>
+                  <div className="w-48">
+                    <label className="label">Enhetstyp</label>
+                    <select value={newUnitTypeId} onChange={(e) => setNewUnitTypeId(e.target.value)} className="input">
+                      <option value="">Välj typ...</option>
+                      {unitTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                  </div>
                   <button onClick={handleCreateUnit} disabled={!newUnitName.trim()} className="btn-primary">Skapa</button>
                 </div>
               </div>
@@ -259,16 +296,41 @@ export default function OrganisationDetail() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {units.map((u) => (
-                      <tr key={u.id} className="hover:bg-stone-50/50 transition-colors">
-                        <td className="px-5 py-3 font-semibold text-gray-900">{u.name}</td>
-                        <td className="px-5 py-3 text-gray-600">{u.unitType?.name || "-"}</td>
-                        <td className="px-5 py-3"><span className={`badge ${getStatusColor(u.status)}`}>{getStatusLabel(u.status)}</span></td>
-                        <td className="px-5 py-3 text-right">
-                          <button onClick={() => handleDeleteUnit(u.id, u.name)} className="text-gray-300 hover:text-red-500 transition-colors">
-                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5Z"/></svg>
-                          </button>
-                        </td>
-                      </tr>
+                      <React.Fragment key={u.id}>
+                        <tr className="hover:bg-stone-50/50 transition-colors cursor-pointer" onClick={() => toggleUnitMembers(u.id)}>
+                          <td className="px-5 py-3 font-semibold text-gray-900">
+                            <span className="inline-flex items-center gap-2">
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className={`text-gray-400 transition-transform ${expandedUnit === u.id ? "rotate-90" : ""}`}><path d="M4.5 2l4 4-4 4"/></svg>
+                              {u.name}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-gray-600">{u.unitType?.name || "-"}</td>
+                          <td className="px-5 py-3"><span className={`badge ${getStatusColor(u.status)}`}>{getStatusLabel(u.status)}</span></td>
+                          <td className="px-5 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                            <button onClick={() => handleDeleteUnit(u.id, u.name)} className="text-gray-300 hover:text-red-500 transition-colors">
+                              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5Z"/></svg>
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedUnit === u.id && (
+                          <tr>
+                            <td colSpan={4} className="px-5 py-3 bg-stone-50/50">
+                              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Medlemmar i {u.name}</p>
+                              {(unitMemberships[u.id] ?? []).length > 0 ? (
+                                <div className="space-y-1">
+                                  {unitMemberships[u.id].map(m => (
+                                    <div key={m.id} className="flex items-center gap-3 text-sm py-1">
+                                      <span className="font-medium text-gray-900">{m.userName}</span>
+                                      {m.roleName && <span className="badge bg-spsm-green-50 text-spsm-green-700 text-xs">{m.roleName}</span>}
+                                      <span className="text-gray-400 text-xs ml-auto">{new Date(m.startDate).toLocaleDateString("sv-SE")}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : <p className="text-sm text-gray-300">Inga medlemmar</p>}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>
@@ -302,19 +364,39 @@ export default function OrganisationDetail() {
             {groups.length > 0 ? (
               <div className="grid gap-3">
                 {groups.map((g) => (
-                  <div key={g.id} className="card-hover p-5 flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{g.name}</h4>
-                      {g.description && <p className="text-sm text-gray-500 mt-0.5">{g.description}</p>}
-                      {g.roles.length > 0 && (
-                        <div className="flex gap-1.5 mt-2">
-                          {g.roles.map(r => <span key={r.id} className="badge bg-spsm-green-50 text-spsm-green-700">{r.name}</span>)}
+                  <div key={g.id} className="card-hover p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 cursor-pointer" onClick={() => toggleGroupMembers(g.id)}>
+                        <div className="flex items-center gap-2">
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className={`text-gray-400 transition-transform ${expandedGroup === g.id ? "rotate-90" : ""}`}><path d="M4.5 2l4 4-4 4"/></svg>
+                          <h4 className="font-semibold text-gray-900">{g.name}</h4>
                         </div>
-                      )}
+                        {g.description && <p className="text-sm text-gray-500 mt-0.5 ml-5">{g.description}</p>}
+                        {g.roles.length > 0 && (
+                          <div className="flex gap-1.5 mt-2 ml-5">
+                            {g.roles.map(r => <span key={r.id} className="badge bg-spsm-green-50 text-spsm-green-700">{r.name}</span>)}
+                          </div>
+                        )}
+                      </div>
+                      <button onClick={() => handleDeleteGroup(g.id, g.name)} className="text-gray-300 hover:text-red-500 transition-colors shrink-0">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5Z"/></svg>
+                      </button>
                     </div>
-                    <button onClick={() => handleDeleteGroup(g.id, g.name)} className="text-gray-300 hover:text-red-500 transition-colors shrink-0">
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5Z"/></svg>
-                    </button>
+                    {expandedGroup === g.id && (
+                      <div className="mt-3 pt-3 border-t border-gray-100 ml-5">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Medlemmar</p>
+                        {(groupMemberships[g.id] ?? []).length > 0 ? (
+                          <div className="space-y-1">
+                            {groupMemberships[g.id].map(m => (
+                              <div key={m.id} className="flex items-center gap-3 text-sm py-1">
+                                <span className="font-medium text-gray-900">{m.userName}</span>
+                                <span className="text-gray-400 text-xs ml-auto">{new Date(m.startDate).toLocaleDateString("sv-SE")}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : <p className="text-sm text-gray-300">Inga medlemmar</p>}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
