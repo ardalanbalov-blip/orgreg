@@ -14,7 +14,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddDbContext<AvtalDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AvtalDb")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("AvtalDb")));
 
 builder.Services.AddScoped<IAgreementRepository, EfAgreementRepository>();
 builder.Services.AddScoped<AgreementService>();
@@ -35,8 +35,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
 
-    using var scope = app.Services.CreateScope();
+using (var scope = app.Services.CreateScope())
+{
     var db = scope.ServiceProvider.GetRequiredService<AvtalDbContext>();
     await db.Database.EnsureCreatedAsync();
 }

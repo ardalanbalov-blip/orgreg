@@ -19,13 +19,13 @@ public class InMemoryReferenceDataRepository : IReferenceDataRepository
         SeedOrgType("c1000000-0000-0000-0000-000000000004", "Övrig", "Övrig organisationstyp");
 
         // Unit types
-        SeedUnitType("u1000000-0000-0000-0000-000000000001", "Grundskola", "Grundskola (åk 1–9)");
-        SeedUnitType("u1000000-0000-0000-0000-000000000002", "Gymnasieskola", "Gymnasieskola (åk 1–3)");
-        SeedUnitType("u1000000-0000-0000-0000-000000000003", "Förskola", "Förskoleverksamhet");
-        SeedUnitType("u1000000-0000-0000-0000-000000000004", "Specialskola", "Specialskola enligt skollagen");
-        SeedUnitType("u1000000-0000-0000-0000-000000000005", "Särskola", "Anpassad grundskola");
-        SeedUnitType("u1000000-0000-0000-0000-000000000006", "Fritidshem", "Fritidshemsverksamhet");
-        SeedUnitType("u1000000-0000-0000-0000-000000000007", "Vuxenutbildning", "Kommunal vuxenutbildning");
+        SeedUnitType("b1000000-0000-0000-0000-000000000001", "Grundskola", "Grundskola (åk 1–9)");
+        SeedUnitType("b1000000-0000-0000-0000-000000000002", "Gymnasieskola", "Gymnasieskola (åk 1–3)");
+        SeedUnitType("b1000000-0000-0000-0000-000000000003", "Förskola", "Förskoleverksamhet");
+        SeedUnitType("b1000000-0000-0000-0000-000000000004", "Specialskola", "Specialskola enligt skollagen");
+        SeedUnitType("b1000000-0000-0000-0000-000000000005", "Särskola", "Anpassad grundskola");
+        SeedUnitType("b1000000-0000-0000-0000-000000000006", "Fritidshem", "Fritidshemsverksamhet");
+        SeedUnitType("b1000000-0000-0000-0000-000000000007", "Vuxenutbildning", "Kommunal vuxenutbildning");
 
         // Education types (SS12000)
         SeedEduType("d1000000-0000-0000-0000-000000000001", "Grundskola", "GR", "Grundskoleutbildning");
