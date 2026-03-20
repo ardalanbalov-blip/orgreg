@@ -1,21 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createOrganisation } from "@/lib/api";
-
-const ORG_TYPES = [
-  { id: "c1000000-0000-0000-0000-000000000001", name: "Kommun" },
-  { id: "c1000000-0000-0000-0000-000000000002", name: "Fristående huvudman" },
-  { id: "c1000000-0000-0000-0000-000000000003", name: "Statlig" },
-  { id: "c1000000-0000-0000-0000-000000000004", name: "Övrig" },
-];
+import { createOrganisation, OrganisationType, getOrganisationTypes } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [orgTypes, setOrgTypes] = useState<OrganisationType[]>([]);
+
+  useEffect(() => {
+    getOrganisationTypes().then(setOrgTypes).catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -110,7 +108,7 @@ export default function RegisterPage() {
                 <label className="label">Organisationstyp *</label>
                 <select name="orgType" required className="input">
                   <option value="">Välj typ...</option>
-                  {ORG_TYPES.map((t) => (
+                  {orgTypes.map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>

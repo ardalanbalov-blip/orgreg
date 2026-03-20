@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import {
-  Organisation, PagedResult, User,
+  Organisation, PagedResult, User, Environment, Role,
   getOrganisations, searchOrganisations, getUsers,
   deleteOrganisation, createOrganisation,
-  getStatusLabel, getStatusColor, getSourceLabel
+  getStatusLabel, getStatusColor, getSourceLabel,
+  getEnvironments, createEnvironment, deleteEnvironment,
+  createRole, deleteRole
 } from "@/lib/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
-type AdminTab = "overview" | "review" | "organisations" | "users" | "import";
+type AdminTab = "overview" | "review" | "organisations" | "users" | "environments" | "import";
 
 interface ReviewOrg { items: Organisation[]; totalCount: number; }
 
@@ -23,6 +25,13 @@ export default function AdminPage() {
   const [importJson, setImportJson] = useState("");
   const [importResult, setImportResult] = useState<string | null>(null);
   const [exportData, setExportData] = useState<string | null>(null);
+  const [environments, setEnvironments] = useState<Environment[]>([]);
+  const [showNewEnv, setShowNewEnv] = useState(false);
+  const [newEnvName, setNewEnvName] = useState("");
+  const [newEnvDesc, setNewEnvDesc] = useState("");
+  const [showNewRole, setShowNewRole] = useState<string | null>(null);
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRoleDesc, setNewRoleDesc] = useState("");
 
   const loadOrgs = async () => {
     try { setOrgs(search ? await searchOrganisations(search, page) : await getOrganisations(page, 50)); } catch {}
@@ -33,11 +42,15 @@ export default function AdminPage() {
   const loadUsers = async () => {
     try { setUsers(await getUsers(1, 200)); } catch {}
   };
+  const loadEnvironments = async () => {
+    try { setEnvironments(await getEnvironments()); } catch {}
+  };
 
   useEffect(() => {
     if (tab === "overview" || tab === "organisations") loadOrgs();
     if (tab === "review") loadPending();
     if (tab === "users") loadUsers();
+    if (tab === "environments") loadEnvironments();
   }, [tab, page]);
 
   const handleApprove = async (id: string) => {
@@ -73,12 +86,35 @@ export default function AdminPage() {
     await deleteOrganisation(id);
     loadOrgs();
   };
+  const handleCreateEnv = async () => {
+    if (!newEnvName.trim()) return;
+    await createEnvironment({ name: newEnvName, description: newEnvDesc || undefined });
+    setNewEnvName(""); setNewEnvDesc(""); setShowNewEnv(false);
+    loadEnvironments();
+  };
+  const handleDeleteEnv = async (id: string, name: string) => {
+    if (!confirm(`Ta bort miljö "${name}"?`)) return;
+    await deleteEnvironment(id);
+    loadEnvironments();
+  };
+  const handleCreateRole = async (envId: string) => {
+    if (!newRoleName.trim()) return;
+    await createRole({ name: newRoleName, description: newRoleDesc || undefined, environmentId: envId });
+    setNewRoleName(""); setNewRoleDesc(""); setShowNewRole(null);
+    loadEnvironments();
+  };
+  const handleDeleteRole = async (id: string, name: string) => {
+    if (!confirm(`Ta bort roll "${name}"?`)) return;
+    await deleteRole(id);
+    loadEnvironments();
+  };
 
   const tabs: { key: AdminTab; label: string; badge?: number }[] = [
     { key: "overview", label: "Översikt" },
     { key: "review", label: "Granska", badge: pendingReview?.totalCount },
     { key: "organisations", label: "Organisationer" },
     { key: "users", label: "Användare" },
+    { key: "environments", label: "Miljöer & Roller" },
     { key: "import", label: "Import / Export" },
   ];
 
@@ -271,6 +307,85 @@ export default function AdminPage() {
                 <div className="p-12 text-center text-gray-300 font-medium">Inga användare registrerade</div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* === ENVIRONMENTS & ROLES === */}
+        {tab === "environments" && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Miljöer & Roller</h3>
+                <p className="text-sm text-gray-500">Hantera systemmiljöer och deras tillhörande roller</p>
+              </div>
+              <button onClick={() => setShowNewEnv(!showNewEnv)} className={showNewEnv ? "btn-ghost btn-sm" : "btn-cta btn-sm"}>
+                {showNewEnv ? "Avbryt" : "Lägg till miljö"}
+              </button>
+            </div>
+            {showNewEnv && (
+              <div className="card p-5 mb-4 bg-stone-50/50 animate-slide-up">
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1">
+                    <label className="label">Miljönamn</label>
+                    <input value={newEnvName} onChange={(e) => setNewEnvName(e.target.value)} className="input" placeholder="t.ex. Digitala Samlingen" autoFocus />
+                  </div>
+                  <div className="flex-1">
+                    <label className="label">Beskrivning</label>
+                    <input value={newEnvDesc} onChange={(e) => setNewEnvDesc(e.target.value)} className="input" placeholder="Valfri beskrivning" />
+                  </div>
+                  <button onClick={handleCreateEnv} disabled={!newEnvName.trim()} className="btn-primary">Skapa</button>
+                </div>
+              </div>
+            )}
+            {environments.length > 0 ? (
+              <div className="grid gap-4">
+                {environments.map((env) => (
+                  <div key={env.id} className="card p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h4 className="font-bold text-gray-900">{env.name}</h4>
+                        {env.description && <p className="text-sm text-gray-500">{env.description}</p>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => { setShowNewRole(showNewRole === env.id ? null : env.id); setNewRoleName(""); setNewRoleDesc(""); }} className="btn-ghost btn-sm text-spsm-burgundy-800">
+                          {showNewRole === env.id ? "Avbryt" : "+ Roll"}
+                        </button>
+                        <button onClick={() => handleDeleteEnv(env.id, env.name)} className="text-gray-300 hover:text-red-500 transition-colors">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5Z"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                    {showNewRole === env.id && (
+                      <div className="bg-stone-50 rounded-lg p-4 mb-3 animate-slide-up">
+                        <div className="flex gap-3 items-end">
+                          <div className="flex-1">
+                            <label className="label">Rollnamn</label>
+                            <input value={newRoleName} onChange={(e) => setNewRoleName(e.target.value)} className="input" placeholder="t.ex. Administratör" autoFocus />
+                          </div>
+                          <div className="flex-1">
+                            <label className="label">Beskrivning</label>
+                            <input value={newRoleDesc} onChange={(e) => setNewRoleDesc(e.target.value)} className="input" placeholder="Valfri beskrivning" />
+                          </div>
+                          <button onClick={() => handleCreateRole(env.id)} disabled={!newRoleName.trim()} className="btn-primary">Skapa</button>
+                        </div>
+                      </div>
+                    )}
+                    {env.roles.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {env.roles.map(r => (
+                          <span key={r.id} className="badge bg-spsm-green-50 text-spsm-green-700 inline-flex items-center gap-1.5 pr-1.5">
+                            {r.name}
+                            <button onClick={() => handleDeleteRole(r.id, r.name)} className="text-spsm-green-400 hover:text-red-500 transition-colors">
+                              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    ) : <p className="text-sm text-gray-300">Inga roller i denna miljö</p>}
+                  </div>
+                ))}
+              </div>
+            ) : <div className="card p-8 text-center text-gray-300 font-medium">Inga miljöer konfigurerade</div>}
           </div>
         )}
 
